@@ -454,12 +454,16 @@ namespace IntelOrca.PeggleEdit.Designer
             for (int i = 0; i <= (int)MovementType.WeirdShape; i++)
             {
                 RibbonButton ritem = new RibbonButton();
-                ritem.Text = ((MovementType)i).ToString();
+                ritem.Text = GetMovementTypeName((MovementType)i);
                 ritem.Tag = i;
                 ritem.Click += new EventHandler(movementTypeRibbonButton_Click);
 
                 btnMovementType.DropDownItems.Add(ritem);
             }
+
+            RibbonButton btnMapMovement = new RibbonButton("Map Path");
+            btnMapMovement.Image = Resources.peg_move_type_32;
+            btnMapMovement.Click += new EventHandler(mapMovementRibbonButton_Click);
 
             RibbonButton btnSpreadPhase = new RibbonButton("Phase");
             btnSpreadPhase.Image = Resources.spread_phase_32;
@@ -475,6 +479,7 @@ namespace IntelOrca.PeggleEdit.Designer
 
             RibbonPanel panelMovement = new RibbonPanel("Movement");
             panelMovement.Items.Add(btnMovementType);
+            panelMovement.Items.Add(btnMapMovement);
             panelMovement.Items.Add(btnSpreadPhase);
             panelMovement.Items.Add(btnDuplicateAndPhase);
             panelMovement.Items.Add(btnLinkSubMovements);
@@ -483,6 +488,47 @@ namespace IntelOrca.PeggleEdit.Designer
             tabObject.Panels.Add(panelProperties);
             tabObject.Panels.Add(panelMovement);
             mRibbon.Tabs.Add(tabObject);
+        }
+
+        private string GetMovementTypeName(MovementType movementType)
+        {
+            switch (movementType)
+            {
+                case MovementType.NoMovement:
+                    return "None";
+                case MovementType.VerticalCycle:
+                    return "Vertical Back-and-Forth";
+                case MovementType.HorizontalCycle:
+                    return "Horizontal Back-and-Forth";
+                case MovementType.Circle:
+                    return "Circle / Ellipse";
+                case MovementType.HorizontalInfinity:
+                    return "Horizontal Figure Eight";
+                case MovementType.VericalInfinity:
+                    return "Vertical Figure Eight";
+                case MovementType.HorizontalArc:
+                    return "Horizontal Arc";
+                case MovementType.VerticalArc:
+                    return "Vertical Arc";
+                case MovementType.Rotate:
+                    return "Rotate";
+                case MovementType.RotateBackAndForth:
+                    return "Rotate Back-and-Forth";
+                case MovementType.Unused:
+                    return "Unused";
+                case MovementType.VerticalWrap:
+                    return "Vertical Wrap";
+                case MovementType.HorizontalWrap:
+                    return "Horizontal Wrap";
+                case MovementType.RotateAroundCircle:
+                    return "Orbit and Rotate";
+                case MovementType.RetraceCircle:
+                    return "Retrace Circle";
+                case MovementType.WeirdShape:
+                    return "Weird Shape";
+                default:
+                    return movementType.ToString();
+            }
         }
 
         private void InitViewTab()
@@ -1019,12 +1065,15 @@ namespace IntelOrca.PeggleEdit.Designer
             List<Movement> movements = new List<Movement>();
             foreach (LevelEntry m in LevelEditor.GetSelectedObjects())
             {
-                if (m.MovementLink.OwnsMovement)
+                if (m.MovementLink?.OwnsMovement == true)
                 {
                     movements.Add(m.MovementLink.Movement);
                 }
             }
+            if (movements.Count == 0)
+                return;
 
+            LevelEditor.CreateUndoPoint();
             for (int i = 0; i < movements.Count; i++)
             {
                 movements[i].Phase = (float)i / (float)movements.Count;
@@ -1108,6 +1157,7 @@ namespace IntelOrca.PeggleEdit.Designer
             }
             var muid = primaryMovement.MUID;
 
+            LevelEditor.CreateUndoPoint();
             for (int i = 1; i < selectedObjects.Count; i++)
             {
                 var secondary = selectedObjects[i];
@@ -1123,6 +1173,14 @@ namespace IntelOrca.PeggleEdit.Designer
             }
 
             LevelEditor.UpdateRedraw();
+        }
+
+        private void mapMovementRibbonButton_Click(object sender, EventArgs e)
+        {
+            if (!IsEditorAvailable())
+                return;
+
+            mParent.SetEditorTool(new MovementMapEditorTool());
         }
 
         private void movementTypeRibbonButton_Click(object sender, EventArgs e)
@@ -1141,8 +1199,19 @@ namespace IntelOrca.PeggleEdit.Designer
                 return;
             }
 
-            foreach (LevelEntry m in LevelEditor.GetSelectedObjects())
+            var selectedObjects = LevelEditor.GetSelectedObjects();
+            if (selectedObjects.Count == 0)
+                return;
+
+            LevelEditor.CreateUndoPoint();
+            foreach (LevelEntry m in selectedObjects)
             {
+                if (movementType == MovementType.NoMovement)
+                {
+                    m.MovementLink = null;
+                    continue;
+                }
+
                 if (m.MovementLink?.Movement is Movement movement)
                 {
                     movement.Type = movementType;
