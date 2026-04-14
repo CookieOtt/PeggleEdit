@@ -1,5 +1,6 @@
 * User Topics
   * [Getting Started](GettingStarted.md)
+  * [Feature Guide](FeatureGuide.md)
   * [Frequently Asked Questions](FrequentlyAskedQuestions.md)
   * [Planned Features](PlannedFeatures.md)
   * [Level Entries](LevelEntries.md)
@@ -11,10 +12,7 @@
     * [Teleports](Teleports.md)
     * [Emitters](Emitters.md)
     * [Generators](Generators.md)
-      * [Peg Generators](PegGenerators.md)
-      * [Brick Generators](BrickGenerators.md)
   * [Advanced Movement](AdvancedMovement.md)
 * Developer Topics
   * [Application Design](ApplicationDesign.md)
-  * [PAK Format](PakFormat.md)
   * [Level Format](LevelFormat.md)

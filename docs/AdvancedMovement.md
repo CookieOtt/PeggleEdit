@@ -1,6 +1,8 @@
 # Introduction #
 Before trying advanced movement paths, it is worth experimenting with simple movement effects to understand the basic properties of movement info fully.
 
+For common custom paths, use **Map Path** on the Object tab. Select one or more objects, click Map Path, then click points on the canvas. Two points create a line path; three or more points create a closed box-style path. Press `Enter` or right-click to apply, `Backspace` to remove the last point, and `Esc` to cancel.
+
 Simple movement paths such as a circle revolve around an anchor point. The location of the anchor point is the location that is stored in the level. This makes it easy to have multiple objects following the same path, as you can just set all their anchor points to be at the same position and spread their phases evenly.
 
 Advanced movement is not that different. You still have your objects moving about an anchor point. However you can set the object's anchor point to also move around another anchor point to create more complex paths.

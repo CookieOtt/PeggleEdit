@@ -30,7 +30,16 @@ This means that out of all the challenges in the game and in all the level packs
 Because Peggle Nights stops its level packs from being overwritten, you have to keep closing and re-opening the game. Another way to test your level is to extract main.pak found in the PeggleNights folder and delete the .pak file so that Peggle Nights reads the individual files in the folder rather than in main.pak. Then you can export your level and save it over the top of an existing quick-play level such as "bjorn1.dat". Then you simply reload the level in the game.
 
 ### What resolution do I need to make my art for the levels? ###
-Peggle runs in 800x600 so your art should be the same. If you need a reference on how your art would look in-game, use the image found [here](img/bg_template.png) for reference. Load it into your preferred image editor as a layer on top of your art.
+Peggle runs in 800x600. PeggleEdit's Set Background screen can crop, move, and resize a source image into the 800x600 level background, and it includes a UI overlay toggle so you can preview how the in-game interface covers the art. If you still want to work in another image editor, use the image found [here](img/bg_template.png) as a reference layer.
 
 ### Why do the images I import for objects have white squares behind them? ###
 Your images need to be transparent. If they are not transparent then you will get this effect. The preferred image type is PNG which supports an alpha channel. Applications such as GIMP or Inkscape allow you to save transparent PNG files. See [GIMP Transparency](http://docs.gimp.org/en/gimp-using-web-transparency.html) for a guide to saving transparent images in GIMP.
+
+### Why does saving say two levels have the same filename? ###
+Each level has a display name and an internal filename. Peggle stores level files in the pack using the internal filename, so two levels with the same filename would overwrite each other. Rename one of the levels in its Properties window and save again.
+
+### Why does PeggleEdit warn about generators when saving? ###
+Generators are helper objects for building layouts in PeggleEdit. Peggle itself does not understand them. Select each generator and click **Apply** on the Tools tab before testing the level in Peggle.
+
+### How do I make a custom movement path? ###
+Select the object or objects you want to move, open the Object tab, and click **Map Path**. Click two points for a line path, or three or more points for a box-style path. Press `Enter` or right-click to apply the movement. Turn on Preview in the View tab to test it.
