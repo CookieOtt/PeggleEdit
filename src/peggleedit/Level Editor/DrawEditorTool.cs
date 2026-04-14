@@ -49,6 +49,9 @@ namespace IntelOrca.PeggleEdit.Designer
         public override void Activate()
         {
             Editor.ClearSelection();
+            MainMDIForm.Instance.SetStatus(_draw ?
+                "Draw tool: drag to paint objects. Ctrl allows overlap." :
+                "Place tool: click to place once. Ctrl allows overlap and keeps placing.");
             Editor.UpdateRedraw();
         }
 

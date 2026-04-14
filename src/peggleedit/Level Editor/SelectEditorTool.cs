@@ -37,6 +37,11 @@ namespace IntelOrca.PeggleEdit.Designer
         private bool _commandKeyDown;
         private PointF _placePosition;
 
+        public override void Activate()
+        {
+            ShowDefaultStatus();
+        }
+
         public override void MouseDown(MouseButtons button, Point location, Keys modifierKeys)
         {
             var level = Editor.Level;
@@ -65,6 +70,10 @@ namespace IntelOrca.PeggleEdit.Designer
                             _objectPoints.Clear();
                             _objectPoints.Add(p);
                             _state = State.MovingPoints;
+                            if (e is CurveGenerator)
+                            {
+                                ShowCurveStatus();
+                            }
                             return;
                         }
                     }
@@ -158,6 +167,7 @@ namespace IntelOrca.PeggleEdit.Designer
             Editor.UpdateRedraw();
 
             Editor.CheckSelectionChanged();
+            ShowContextualStatus();
         }
 
 
@@ -500,6 +510,7 @@ namespace IntelOrca.PeggleEdit.Designer
 
             Editor.UpdateRedraw();
             Editor.InvokeSelectionChangedEvent();
+            ShowContextualStatus();
         }
 
         public override void KeyDown(KeyEventArgs e)
@@ -621,6 +632,29 @@ namespace IntelOrca.PeggleEdit.Designer
             Editor.Level.Entries.Remove(curve);
             Editor.SelectedEntries.Remove(curve);
             Editor.InvokeSelectionChangedEvent();
+            ShowContextualStatus();
+        }
+
+        private void ShowContextualStatus()
+        {
+            if (GetSingleSelectedCurveGenerator() != null)
+            {
+                ShowCurveStatus();
+            }
+            else
+            {
+                ShowDefaultStatus();
+            }
+        }
+
+        private void ShowDefaultStatus()
+        {
+            MainMDIForm.Instance.SetStatus("Select: Ctrl-click toggles selection, drag moves, arrow keys nudge, Ctrl/Alt changes nudge size, right-click opens options.");
+        }
+
+        private void ShowCurveStatus()
+        {
+            MainMDIForm.Instance.SetStatus("Curve path: drag points/handles to edit. Delete/Backspace removes a segment; C toggles line/curve; Interval updates live.");
         }
 
         public override void KeyUp(KeyEventArgs e)

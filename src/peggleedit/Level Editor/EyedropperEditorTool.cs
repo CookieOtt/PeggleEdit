@@ -22,6 +22,11 @@ namespace IntelOrca.PeggleEdit.Designer
 {
     internal class EyedropperEditorTool : EditorTool
     {
+        public override void Activate()
+        {
+            MainMDIForm.Instance.SetStatus("Eyedropper: click an object to switch to a matching placement tool.");
+        }
+
         public override void MouseUp(MouseButtons button, Point location, Keys modifierKeys)
         {
             var level = Editor.Level;

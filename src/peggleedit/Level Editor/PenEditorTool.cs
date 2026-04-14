@@ -30,6 +30,7 @@ namespace IntelOrca.PeggleEdit.Designer.Level_Editor
         public override void Activate()
         {
             Editor.ClearSelection();
+            MainMDIForm.Instance.SetStatus("Pen: click/drag to place points, Ctrl snaps angle, right-click finishes. Select the path later to edit points.");
             Editor.UpdateRedraw();
         }
 
@@ -123,6 +124,7 @@ namespace IntelOrca.PeggleEdit.Designer.Level_Editor
             if (button == MouseButtons.Right)
             {
                 EndDraw();
+                MainMDIForm.Instance.SetStatus("Pen path finished. Select it to move points; Delete removes a segment, C toggles line/curve.");
                 Editor.UpdateRedraw();
                 return;
             }
@@ -158,6 +160,7 @@ namespace IntelOrca.PeggleEdit.Designer.Level_Editor
                     break;
             }
             _entry?.InvalidatePath();
+            MainMDIForm.Instance.SetStatus("Pen: click/drag to add segments, Ctrl snaps angle, right-click finishes.");
             Editor.UpdateRedraw();
         }
 

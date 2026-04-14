@@ -15,7 +15,7 @@ namespace IntelOrca.PeggleEdit.Designer.Level_Editor
 
         public override void Activate()
         {
-            MainMDIForm.Instance.SetStatus("Select objects, then click points for their movement path. Two points makes a line; three or more makes a box.");
+            MainMDIForm.Instance.SetStatus("Map Path: click points. 2 points = line, 3+ = box. Shift snaps, Enter/right-click applies, Backspace removes, Esc cancels.");
             Editor.UpdateRedraw();
         }
 
@@ -49,15 +49,15 @@ namespace IntelOrca.PeggleEdit.Designer.Level_Editor
 
             if (_points.Count == 1)
             {
-                MainMDIForm.Instance.SetStatus("First path point set. Add another point for a line, or keep adding points for a box.");
+                MainMDIForm.Instance.SetStatus("First path point set. Add another for a line; add more for a box. Shift snaps, Esc cancels.");
             }
             else if (_points.Count == 2)
             {
-                MainMDIForm.Instance.SetStatus("Second path point set. Enter/right-click applies a straight path, or add more points for a box.");
+                MainMDIForm.Instance.SetStatus("Second path point set. Enter/right-click applies a line; add more points for a box. Backspace removes.");
             }
             else
             {
-                MainMDIForm.Instance.SetStatus("Box path points set. Enter/right-click applies, Backspace removes the last point.");
+                MainMDIForm.Instance.SetStatus("Box path points set. Enter/right-click applies, Backspace removes the last point, Esc cancels.");
             }
 
             Editor.UpdateRedraw();

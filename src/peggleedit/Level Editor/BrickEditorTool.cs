@@ -59,6 +59,7 @@ namespace IntelOrca.PeggleEdit.Designer
         public override void Activate()
         {
             Editor.ClearSelection();
+            MainMDIForm.Instance.SetStatus("Brick tool: click/drag to place. Shift disables auto-connect; Ctrl allows overlap.");
             Editor.UpdateRedraw();
         }
 
