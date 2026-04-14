@@ -107,6 +107,8 @@ namespace IntelOrca.PeggleEdit.Designer
         RibbonButton btnEmitter;
         RibbonButton btnPegGenerator;
         RibbonButton btnBrickGenerator;
+        RibbonButton btnPegGridGenerator;
+        RibbonButton btnBrickGridGenerator;
 
         RibbonPanel panelClipboard;
         RibbonPanel panelAlignment;
@@ -399,8 +401,18 @@ namespace IntelOrca.PeggleEdit.Designer
             btnBrickGenerator.SmallImage = Resources.brick_16;
             btnBrickGenerator.Click += new EventHandler(brickGeneratorRibbonButton_Click);
 
+            btnPegGridGenerator = new RibbonButton("Peg Grid Generator");
+            btnPegGridGenerator.SmallImage = Resources.peg_16;
+            btnPegGridGenerator.Click += new EventHandler(pegGridGeneratorRibbonButton_Click);
+
+            btnBrickGridGenerator = new RibbonButton("Brick Grid Generator");
+            btnBrickGridGenerator.SmallImage = Resources.brick_16;
+            btnBrickGridGenerator.Click += new EventHandler(brickGridGeneratorRibbonButton_Click);
+
             btnGenerator.DropDownItems.Add(btnPegGenerator);
             btnGenerator.DropDownItems.Add(btnBrickGenerator);
+            btnGenerator.DropDownItems.Add(btnPegGridGenerator);
+            btnGenerator.DropDownItems.Add(btnBrickGridGenerator);
 
             panelInsert = new RibbonPanel("Tools");
             panelInsert.Items.Add(btnSelectTool);
@@ -998,6 +1010,18 @@ namespace IntelOrca.PeggleEdit.Designer
         private void brickGeneratorRibbonButton_Click(object sender, EventArgs e)
         {
             var bg = new BrickGenerator(null);
+            mParent.SetEditorTool(new DrawEditorTool(bg, false));
+        }
+
+        private void pegGridGeneratorRibbonButton_Click(object sender, EventArgs e)
+        {
+            var pg = new PegGridGenerator(null);
+            mParent.SetEditorTool(new DrawEditorTool(pg, false));
+        }
+
+        private void brickGridGeneratorRibbonButton_Click(object sender, EventArgs e)
+        {
+            var bg = new BrickGridGenerator(null);
             mParent.SetEditorTool(new DrawEditorTool(bg, false));
         }
 

@@ -55,6 +55,10 @@ namespace IntelOrca.PeggleEdit.Tools.Levels.Children
                     return new PegCurveGenerator(level);
                 case LevelEntryTypes.BrickCurveGenerator:
                     return new BrickCurveGenerator(level);
+                case LevelEntryTypes.PegGridGenerator:
+                    return new PegGridGenerator(level);
+                case LevelEntryTypes.BrickGridGenerator:
+                    return new BrickGridGenerator(level);
 
                 default:
                     return new UnknownEntry(level, type);

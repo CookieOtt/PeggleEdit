@@ -12,5 +12,7 @@
         public const int BrickGenerator = 1002;
         public const int PegCurveGenerator = 1003;
         public const int BrickCurveGenerator = 1004;
+        public const int PegGridGenerator = 1005;
+        public const int BrickGridGenerator = 1006;
     }
 }
