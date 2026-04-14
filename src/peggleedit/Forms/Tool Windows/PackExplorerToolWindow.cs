@@ -577,38 +577,32 @@ namespace IntelOrca.PeggleEdit.Designer
         private void mnuSetBackground_Click(object sender, EventArgs e)
         {
             Level level = SelectedNode.Tag as Level;
-            OpenFileDialog dialog = new OpenFileDialog();
-            dialog.Title = "Import background image";
-            dialog.Filter = "Supported Image Files|*.png;*.jpg|Portable Network Graphics (*.png)|*.png|Joint Photographic Experts Group (*.jpg)|*.jpg";
-            if (dialog.ShowDialog() == DialogResult.OK)
+            using (OpenFileDialog dialog = new OpenFileDialog())
             {
-                using (var fileImage = Image.FromFile(dialog.FileName))
+                dialog.Title = "Import background image";
+                dialog.Filter = "Supported Image Files|*.png;*.jpg|Portable Network Graphics (*.png)|*.png|Joint Photographic Experts Group (*.jpg)|*.jpg";
+                if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    var bitmap = new Bitmap(800, 600);
-                    using (var g = Graphics.FromImage(bitmap))
+                    using (var fileImage = Image.FromFile(dialog.FileName))
                     {
-                        g.SmoothingMode = SmoothingMode.HighQuality;
+                        using (var form = new BackgroundImportForm(fileImage))
+                        {
+                            if (form.ShowDialog(this) != DialogResult.OK)
+                                return;
 
-                        // Calculate the zoomed crop rectangle
-                        var zoomFactor = Math.Max((float)bitmap.Width / fileImage.Width, (float)bitmap.Height / fileImage.Height);
-                        var zoomedWidth = (int)(fileImage.Width * zoomFactor);
-                        var zoomedHeight = (int)(fileImage.Height * zoomFactor);
-                        var zoomedX = (bitmap.Width - zoomedWidth) / 2;
-                        var zoomedY = (bitmap.Height - zoomedHeight) / 2;
-                        g.DrawImage(
-                            fileImage,
-                            new Rectangle(zoomedX, zoomedY, zoomedWidth, zoomedHeight),
-                            new Rectangle(0, 0, fileImage.Width, fileImage.Height),
-                            GraphicsUnit.Pixel);
+                            using (var bitmap = form.CreateBackground())
+                            {
+                                level.Background = new PakImage(Path.GetFileName(dialog.FileName), bitmap);
+                            }
+                            level.Thumbnail = null;
+                        }
                     }
-                    level.Background = new PakImage(Path.GetFileName(dialog.FileName), bitmap);
-                    level.Thumbnail = null;
-                }
 
-                LevelToolWindow ltw = mParent.GetLevelToolWindow(level);
-                if (ltw != null)
-                {
-                    ltw.LevelEditor.UpdateRedraw();
+                    LevelToolWindow ltw = mParent.GetLevelToolWindow(level);
+                    if (ltw != null)
+                    {
+                        ltw.LevelEditor.UpdateRedraw();
+                    }
                 }
             }
         }

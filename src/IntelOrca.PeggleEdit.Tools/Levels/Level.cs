@@ -60,6 +60,7 @@ namespace IntelOrca.PeggleEdit.Tools.Levels
 
         public PakImage Background { get; set; }
         public PakImage Thumbnail { get; set; }
+        public static Image InterfaceImage => mInterface;
         public bool ShowParticles { get; set; } = true;
         public bool UsePegTextures { get; set; }
         public ulong Hash { get; set; }
