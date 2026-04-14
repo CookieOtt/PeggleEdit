@@ -667,11 +667,13 @@ namespace IntelOrca.PeggleEdit.Designer
             NewPack();
             if (level != null)
             {
+                mPack.Levels.Clear();
+
                 LevelInfo info = LevelInfo.DefaultInfo;
+                info.Filename = mPack.GetUniqueLevelFilename(Path.GetFileNameWithoutExtension(path).ToLower());
                 info.Name = Path.GetFileNameWithoutExtension(path);
                 level.Info = info;
 
-                mPack.Levels.Clear();
                 mPack.Levels.Add(level);
                 OpenLevel(level);
             }
@@ -686,7 +688,11 @@ namespace IntelOrca.PeggleEdit.Designer
             mPackFilename = String.Empty;
 
             LevelPack pack = new LevelPack();
-            pack.Levels.Add(new Level());
+            Level level = new Level();
+            LevelInfo info = level.Info;
+            info.Filename = pack.GetUniqueLevelFilename(info.Filename);
+            level.Info = info;
+            pack.Levels.Add(level);
             OpenPack(pack);
             OpenLevel(pack.Levels[0]);
             SetStatus("Select a tool from the Tools tab to start adding pegs and objects.");
@@ -727,8 +733,11 @@ namespace IntelOrca.PeggleEdit.Designer
         public bool SavePack(string filename)
         {
             CheckAndShowUnplayableWarning();
+            if (!mPack.Save(filename))
+                return false;
+
             UpdateRecentList(filename);
-            return mPack.Save(filename);
+            return true;
         }
 
         public void ClosePack()

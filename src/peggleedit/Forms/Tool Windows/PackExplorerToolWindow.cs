@@ -433,8 +433,8 @@ namespace IntelOrca.PeggleEdit.Designer
             {
                 if (folderDialog.ShowDialog() == DialogResult.OK)
                 {
-                    mPack.Export(folderDialog.SelectedPath);
-                    Process.Start(folderDialog.SelectedPath);
+                    if (mPack.Export(folderDialog.SelectedPath))
+                        Process.Start(folderDialog.SelectedPath);
                 }
             }
         }
@@ -457,6 +457,9 @@ namespace IntelOrca.PeggleEdit.Designer
         private void mnuLevelFolderAdd_Click(object sender, EventArgs e)
         {
             Level level = new Level();
+            LevelInfo info = level.Info;
+            info.Filename = mPack.GetUniqueLevelFilename(info.Filename);
+            level.Info = info;
             mPack.Levels.Add(level);
 
             LevelFolderNode.Nodes.Add(GetLevelNode(level));
@@ -477,7 +480,7 @@ namespace IntelOrca.PeggleEdit.Designer
                 if (level != null)
                 {
                     LevelInfo info = LevelInfo.DefaultInfo;
-                    info.Filename = Path.GetFileNameWithoutExtension(dialog.FileName).ToLower();
+                    info.Filename = mPack.GetUniqueLevelFilename(Path.GetFileNameWithoutExtension(dialog.FileName).ToLower());
                     info.Name = Path.GetFileNameWithoutExtension(dialog.FileName);
                     level.Info = info;
 
@@ -559,7 +562,7 @@ namespace IntelOrca.PeggleEdit.Designer
         private void mnuLevelProperties_Click(object sender, EventArgs e)
         {
             Level level = SelectedNode.Tag as Level;
-            LevelDetailsForm form = new LevelDetailsForm(level);
+            LevelDetailsForm form = new LevelDetailsForm(level, mPack);
             if (form.ShowDialog() == DialogResult.OK)
             {
                 //Level name may have changed

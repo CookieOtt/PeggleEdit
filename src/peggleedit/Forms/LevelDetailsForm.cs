@@ -17,16 +17,24 @@
 using System;
 using System.Windows.Forms;
 using IntelOrca.PeggleEdit.Tools.Levels;
+using IntelOrca.PeggleEdit.Tools.Pack;
 
 namespace IntelOrca.PeggleEdit.Designer
 {
     partial class LevelDetailsForm : Form
     {
         private Level mLevel;
+        private LevelPack mPack;
 
         public LevelDetailsForm(Level level)
+            : this(level, null)
+        {
+        }
+
+        public LevelDetailsForm(Level level, LevelPack pack)
         {
             mLevel = level;
+            mPack = pack;
 
             InitializeComponent();
 
@@ -41,15 +49,24 @@ namespace IntelOrca.PeggleEdit.Designer
 
         private void btnOK_Click(object sender, EventArgs e)
         {
-            if (txtFilename.TextLength == 0)
+            var filename = txtFilename.Text.Trim();
+            var name = txtName.Text.Trim();
+
+            if (filename.Length == 0)
             {
                 MessageBox.Show("No filename specified.", "Properties", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 return;
             }
 
-            if (txtName.TextLength == 0)
+            if (name.Length == 0)
             {
                 MessageBox.Show("No display name specified.", "Properties", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
+            }
+
+            if (mPack != null && mPack.IsLevelFilenameInUse(filename, mLevel))
+            {
+                MessageBox.Show("Another level already uses this filename. Choose a unique filename before saving the level properties.", "Properties", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 return;
             }
 
@@ -68,10 +85,10 @@ namespace IntelOrca.PeggleEdit.Designer
             }
 
             LevelInfo info = new LevelInfo();
-            info.Filename = txtFilename.Text;
-            info.Name = txtName.Text;
-            info.AceScore = Convert.ToInt32(txtAceScore.Text);
-            info.MinStage = Convert.ToInt32(txtMinStage.Text);
+            info.Filename = filename;
+            info.Name = name;
+            info.AceScore = aceScore;
+            info.MinStage = minStage;
             mLevel.Info = info;
 
             DialogResult = DialogResult.OK;

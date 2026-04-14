@@ -46,6 +46,49 @@ namespace IntelOrca.PeggleEdit.Tools.Pack
         public string Name { get; set; } = "Untitled Pack";
         public string Description { get; set; } = "Type your description here.";
 
+        public string GetUniqueLevelFilename(string baseFilename, Level exceptLevel = null)
+        {
+            baseFilename = NormalizeLevelFilename(baseFilename);
+            if (String.IsNullOrEmpty(baseFilename))
+                baseFilename = LevelInfo.DefaultInfo.Filename;
+
+            var result = baseFilename;
+            var index = 0;
+            while (IsLevelFilenameInUse(result, exceptLevel))
+            {
+                index++;
+                result = String.Format("{0}_{1:00}", baseFilename, index);
+            }
+            return result;
+        }
+
+        public bool IsLevelFilenameInUse(string filename, Level exceptLevel = null)
+        {
+            filename = NormalizeLevelFilename(filename);
+            return Levels.Any(x =>
+                !Object.ReferenceEquals(x, exceptLevel) &&
+                String.Equals(NormalizeLevelFilename(x.Info.Filename), filename, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public Dictionary<string, List<Level>> GetDuplicateLevelFilenames()
+        {
+            return Levels
+                .Where(x => !String.IsNullOrEmpty(NormalizeLevelFilename(x.Info.Filename)))
+                .GroupBy(x => NormalizeLevelFilename(x.Info.Filename), StringComparer.OrdinalIgnoreCase)
+                .Where(x => x.Count() > 1)
+                .ToDictionary(x => x.Key, x => x.ToList(), StringComparer.OrdinalIgnoreCase);
+        }
+
+        public bool HasDuplicateLevelFilenames()
+        {
+            return GetDuplicateLevelFilenames().Count != 0;
+        }
+
+        private static string NormalizeLevelFilename(string filename)
+        {
+            return (filename ?? String.Empty).Trim();
+        }
+
         public static void RegisterPegglePath(string pegglePath)
         {
             _pegglePath = pegglePath;
@@ -142,6 +185,9 @@ namespace IntelOrca.PeggleEdit.Tools.Pack
         {
             try
             {
+                if (!ValidateLevelFilenames("Save Level Pack"))
+                    return false;
+
                 var pakFile = SaveToPack(path);
                 pakFile.Save(path);
                 return true;
@@ -380,23 +426,54 @@ namespace IntelOrca.PeggleEdit.Tools.Pack
             }
         }
 
-        public void Export(string selectedPath)
+        public bool Export(string selectedPath)
         {
             try
             {
+                if (!ValidateLevelFilenames("Export Level Pack"))
+                    return false;
+
                 var pakFile = SaveToPack(selectedPath);
                 pakFile.Export(selectedPath);
+                return true;
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Export Level Pack", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+            return false;
         }
 
         private static string GetCfgFileName(string path)
         {
             var fileName = Path.GetFileNameWithoutExtension(path);
             return fileName + ".cfg";
+        }
+
+        private bool ValidateLevelFilenames(string title)
+        {
+            var duplicates = GetDuplicateLevelFilenames();
+            if (duplicates.Count == 0)
+                return true;
+
+            MessageBox.Show(
+                "This pack has multiple levels with the same filename. Saving would overwrite level data, so the pack was not written.\n\n" +
+                GetDuplicateLevelFilenameMessage(duplicates),
+                title,
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+            return false;
+        }
+
+        private static string GetDuplicateLevelFilenameMessage(Dictionary<string, List<Level>> duplicates)
+        {
+            var sb = new StringBuilder();
+            foreach (var duplicate in duplicates)
+            {
+                sb.AppendFormat("{0}: ", duplicate.Key);
+                sb.AppendLine(String.Join(", ", duplicate.Value.Select(x => x.Info.Name).ToArray()));
+            }
+            return sb.ToString();
         }
 
         private PakImage GetImage(PakCollection collection, string fileName)
