@@ -49,6 +49,70 @@ namespace IntelOrca.PeggleEdit.Tools.Levels
             Points[GetActualIndex(index)] = position;
         }
 
+        public bool RemoveElementEndingAt(int index)
+        {
+            index = GetActualIndex(index);
+            var endIndex = GetElementEndIndex(index);
+            if (endIndex <= 0)
+                return false;
+
+            var startIndex = GetPreviousElementEndIndex(endIndex);
+            if (startIndex < 0)
+                return false;
+
+            Points.RemoveRange(startIndex + 1, endIndex - startIndex);
+            PointKinds.RemoveRange(startIndex + 1, endIndex - startIndex);
+            return true;
+        }
+
+        public bool RemoveLastElement()
+        {
+            return RemoveElementEndingAt(NumPoints - 1);
+        }
+
+        public bool ToggleElementEndingAt(int index)
+        {
+            index = GetActualIndex(index);
+            var endIndex = GetElementEndIndex(index);
+            if (endIndex <= 0)
+                return false;
+
+            var startIndex = GetPreviousElementEndIndex(endIndex);
+            if (startIndex < 0)
+                return false;
+
+            var endPoint = Points[endIndex];
+            if (PointKinds[endIndex] == PointKind.LineTo)
+            {
+                var startPoint = Points[startIndex];
+                var controlPoint = new PointF(
+                    startPoint.X + ((endPoint.X - startPoint.X) / 2.0f),
+                    startPoint.Y + ((endPoint.Y - startPoint.Y) / 2.0f));
+
+                PointKinds[endIndex] = PointKind.CurveTo;
+                Points.Insert(endIndex, controlPoint);
+                PointKinds.Insert(endIndex, PointKind.CurveVia);
+            }
+            else if (PointKinds[endIndex] == PointKind.CurveTo)
+            {
+                Points.RemoveRange(startIndex + 1, endIndex - startIndex);
+                PointKinds.RemoveRange(startIndex + 1, endIndex - startIndex);
+                Points.Insert(startIndex + 1, endPoint);
+                PointKinds.Insert(startIndex + 1, PointKind.LineTo);
+            }
+            else
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public bool ToggleLastElement()
+        {
+            return ToggleElementEndingAt(NumPoints - 1);
+        }
+
         private int GetActualIndex(int index)
         {
             if (index < 0)
@@ -56,6 +120,35 @@ namespace IntelOrca.PeggleEdit.Tools.Levels
                 index += NumPoints;
             }
             return index;
+        }
+
+        private int GetElementEndIndex(int index)
+        {
+            if (IsElementEnd(index))
+                return index;
+
+            for (var i = index + 1; i < NumPoints; i++)
+            {
+                if (IsElementEnd(i))
+                    return i;
+            }
+            return -1;
+        }
+
+        private int GetPreviousElementEndIndex(int index)
+        {
+            for (var i = index - 1; i >= 0; i--)
+            {
+                if (IsElementEnd(i))
+                    return i;
+            }
+            return -1;
+        }
+
+        private bool IsElementEnd(int index)
+        {
+            var kind = PointKinds[index];
+            return kind == PointKind.MoveTo || kind == PointKind.LineTo || kind == PointKind.CurveTo;
         }
 
         public PenPathElement[] GetElements()

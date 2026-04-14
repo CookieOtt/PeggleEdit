@@ -11,6 +11,7 @@ namespace IntelOrca.PeggleEdit.Tools.Levels.Children
     public abstract class CurveGenerator : LevelEntry, ICloneable, IEntryFunction, IPointContainer
     {
         public BezierPath BezierPath { get; private set; } = new BezierPath();
+        private int _interval = 30;
 
         public CurveGenerator(Level level)
             : base(level)
@@ -181,6 +182,7 @@ namespace IntelOrca.PeggleEdit.Tools.Levels.Children
         {
             base.CloneTo(copy);
             copy.BezierPath = BezierPath.Clone();
+            copy._interval = _interval;
         }
 
         public void RecalculateOrigin()
@@ -222,7 +224,15 @@ namespace IntelOrca.PeggleEdit.Tools.Levels.Children
         [Description("The distance between each generated peg.")]
         [Category("Layout")]
         [DefaultValue(30)]
-        public int Interval { get; set; } = 30;
+        public int Interval
+        {
+            get => _interval;
+            set
+            {
+                _interval = Math.Max(1, value);
+                InvalidatePath();
+            }
+        }
 
         [DisplayName("Path")]
         [Description("SVG syntax for the path.")]
@@ -270,6 +280,38 @@ namespace IntelOrca.PeggleEdit.Tools.Levels.Children
         {
             BezierPath.SetPosition(index, value.Subtract(Location));
             InvalidatePath();
+        }
+
+        public bool RemoveInteractionPoint(int index)
+        {
+            var removed = BezierPath.RemoveElementEndingAt(index);
+            if (removed)
+                InvalidatePath();
+            return removed;
+        }
+
+        public bool RemoveLastInteractionSegment()
+        {
+            var removed = BezierPath.RemoveLastElement();
+            if (removed)
+                InvalidatePath();
+            return removed;
+        }
+
+        public bool ToggleInteractionCurve(int index)
+        {
+            var toggled = BezierPath.ToggleElementEndingAt(index);
+            if (toggled)
+                InvalidatePath();
+            return toggled;
+        }
+
+        public bool ToggleLastInteractionCurve()
+        {
+            var toggled = BezierPath.ToggleLastElement();
+            if (toggled)
+                InvalidatePath();
+            return toggled;
         }
     }
 }

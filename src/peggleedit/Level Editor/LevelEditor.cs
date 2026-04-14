@@ -1042,7 +1042,10 @@ namespace IntelOrca.PeggleEdit.Designer
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
-            OnKeyDown(new KeyEventArgs(keyData));
+            var e = new KeyEventArgs(keyData);
+            OnKeyDown(e);
+            if (e.Handled)
+                return true;
 
             return base.ProcessCmdKey(ref msg, keyData);
         }
@@ -1050,6 +1053,9 @@ namespace IntelOrca.PeggleEdit.Designer
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
+            if (e.Handled)
+                return;
+
             mSelectedTool?.KeyDown(e);
         }
 

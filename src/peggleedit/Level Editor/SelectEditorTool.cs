@@ -33,7 +33,7 @@ namespace IntelOrca.PeggleEdit.Designer
         private LevelEntry _dragObject;
         private bool _firstObjectMovement;
         private List<LevelEntry> _previousSelection = new List<LevelEntry>();
-        private int _pointMoveIndex;
+        private int _pointMoveIndex = -1;
         private bool _commandKeyDown;
         private PointF _placePosition;
 
@@ -43,6 +43,7 @@ namespace IntelOrca.PeggleEdit.Designer
             var vl = Editor.Level.GetVirtualXY(location);
 
             Editor.SetProvisonalEntry(null);
+            _pointMoveIndex = -1;
 
             foreach (LevelEntry e in Editor.SelectedEntries)
             {
@@ -527,6 +528,23 @@ namespace IntelOrca.PeggleEdit.Designer
                         PlaceBrick(!e.Shift, e.KeyCode == Keys.V, e.Control, false);
                     }
                     break;
+                case Keys.Delete:
+                case Keys.Back:
+                    if (RemoveSelectedCurveSegment())
+                    {
+                        e.Handled = true;
+                        e.SuppressKeyPress = true;
+                        return;
+                    }
+                    return;
+                case Keys.C:
+                    if (e.Modifiers == Keys.None && ToggleSelectedCurveSegment())
+                    {
+                        e.Handled = true;
+                        e.SuppressKeyPress = true;
+                        return;
+                    }
+                    return;
                 default:
                     return;
             }
@@ -543,6 +561,66 @@ namespace IntelOrca.PeggleEdit.Designer
             }
 
             Editor.MoveObjects(x, y);
+        }
+
+        private bool RemoveSelectedCurveSegment()
+        {
+            var curve = GetSingleSelectedCurveGenerator();
+            if (curve == null)
+                return false;
+            if (curve.InteractionPointCount <= 1 || _pointMoveIndex == 0)
+                return false;
+
+            Editor.CreateUndoPoint();
+            var changed = _pointMoveIndex >= 0 ?
+                curve.RemoveInteractionPoint(_pointMoveIndex) :
+                curve.RemoveLastInteractionSegment();
+            if (!changed)
+                return false;
+
+            _pointMoveIndex = -1;
+            RemoveCurveGeneratorIfEmpty(curve);
+            Editor.UpdateRedraw();
+            return true;
+        }
+
+        private bool ToggleSelectedCurveSegment()
+        {
+            var curve = GetSingleSelectedCurveGenerator();
+            if (curve == null)
+                return false;
+            if (curve.InteractionPointCount <= 1 || _pointMoveIndex == 0)
+                return false;
+
+            Editor.CreateUndoPoint();
+            var changed = _pointMoveIndex >= 0 ?
+                curve.ToggleInteractionCurve(_pointMoveIndex) :
+                curve.ToggleLastInteractionCurve();
+            if (!changed)
+                return false;
+
+            _pointMoveIndex = -1;
+            Editor.UpdateRedraw();
+            return true;
+        }
+
+        private CurveGenerator GetSingleSelectedCurveGenerator()
+        {
+            if (Editor.SelectedEntries.Count != 1)
+                return null;
+
+            return Editor.SelectedEntries[0] as CurveGenerator;
+        }
+
+        private void RemoveCurveGeneratorIfEmpty(CurveGenerator curve)
+        {
+            if (curve.BezierPath.GetElements().Length != 0)
+                return;
+
+            curve.OnDelete();
+            Editor.Level.Entries.Remove(curve);
+            Editor.SelectedEntries.Remove(curve);
+            Editor.InvokeSelectionChangedEvent();
         }
 
         public override void KeyUp(KeyEventArgs e)
