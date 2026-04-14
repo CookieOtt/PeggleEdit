@@ -47,6 +47,7 @@ namespace IntelOrca.PeggleEdit.Designer
 
         public event EventHandler UpdatedRedrawed;
         public event EventHandler SelectionChanged;
+        public event EventHandler ContentChanged;
 
         public LevelEditor()
         {
@@ -87,6 +88,7 @@ namespace IntelOrca.PeggleEdit.Designer
         {
             mUndoHistory.Push(CreateHistorySnapshot());
             mRedoHistory.Clear();
+            OnContentChanged();
         }
 
         private LevelEntry[] CreateHistorySnapshot()
@@ -124,6 +126,7 @@ namespace IntelOrca.PeggleEdit.Designer
 
             mRedoHistory.Push(CreateHistorySnapshot());
             RestoreHistorySnapshot(mUndoHistory.Pop());
+            OnContentChanged();
         }
 
         public void Redo()
@@ -133,6 +136,13 @@ namespace IntelOrca.PeggleEdit.Designer
 
             mUndoHistory.Push(CreateHistorySnapshot());
             RestoreHistorySnapshot(mRedoHistory.Pop());
+            OnContentChanged();
+        }
+
+        private void OnContentChanged()
+        {
+            if (ContentChanged != null)
+                ContentChanged(this, EventArgs.Empty);
         }
 
         private void RestoreHistorySnapshot(LevelEntry[] entries)

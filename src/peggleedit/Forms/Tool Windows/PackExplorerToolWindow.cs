@@ -106,6 +106,7 @@ namespace IntelOrca.PeggleEdit.Designer
                         mTreeView.Nodes.Remove(SelectedNode);
                         LevelFolderNode.Nodes.Insert(index - 1, lnode);
                         mTreeView.SelectedNode = lnode;
+                        mParent.MarkPackDirty();
                     }
                 }
                 else if (e.KeyCode == Keys.Down)
@@ -123,6 +124,7 @@ namespace IntelOrca.PeggleEdit.Designer
                         mTreeView.Nodes.Remove(SelectedNode);
                         LevelFolderNode.Nodes.Insert(index + 1, lnode);
                         mTreeView.SelectedNode = lnode;
+                        mParent.MarkPackDirty();
                     }
                 }
 
@@ -159,10 +161,23 @@ namespace IntelOrca.PeggleEdit.Designer
                 return;
 
             //Label checks
-            string newkey = e.Label;
-            newkey.Replace("/", "\\");          //Make all slashes the right way
-            newkey.Replace("\\\\", "\\");       //Remove double slashes
-            if (mPack.Images.ContainsKey(newkey))
+            string newkey = e.Label.Trim();
+            newkey = newkey.Replace("/", "\\");          //Make all slashes the right way
+            while (newkey.Contains("\\\\"))
+                newkey = newkey.Replace("\\\\", "\\");   //Remove double slashes
+
+            if (newkey.Length == 0)
+            {
+                e.CancelEdit = true;
+                MessageBox.Show("No image name specified.", "Rename Image", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            string oldkey = e.Node.Text;
+            if (String.Equals(oldkey, newkey, StringComparison.Ordinal))
+                return;
+
+            if (!String.Equals(oldkey, newkey, StringComparison.OrdinalIgnoreCase) && mPack.Images.ContainsKey(newkey))
             {
                 e.CancelEdit = true;
                 MessageBox.Show("This image name already exists!", "Already Exists", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -176,9 +191,11 @@ namespace IntelOrca.PeggleEdit.Designer
                 return;
             }
 
-            string oldkey = SelectedNode.Text;
             mPack.Images.Remove(oldkey);
             mPack.Images.Add(newkey, image);
+            e.CancelEdit = true;
+            e.Node.Text = newkey;
+            mParent.MarkPackDirty();
         }
 
         public void UpdateView()
@@ -411,6 +428,7 @@ namespace IntelOrca.PeggleEdit.Designer
             {
                 //Pack name may have changed
                 SelectedNode.Text = mPack.Name;
+                mParent.MarkPackDirty();
             }
         }
 
@@ -423,6 +441,7 @@ namespace IntelOrca.PeggleEdit.Designer
                     var pack = new LevelPack();
                     pack.Import(folderDialog.SelectedPath);
                     mParent.OpenPack(pack);
+                    mParent.MarkPackDirty();
                 }
             }
         }
@@ -461,6 +480,7 @@ namespace IntelOrca.PeggleEdit.Designer
             info.Filename = mPack.GetUniqueLevelFilename(info.Filename);
             level.Info = info;
             mPack.Levels.Add(level);
+            mParent.MarkPackDirty();
 
             LevelFolderNode.Nodes.Add(GetLevelNode(level));
         }
@@ -487,6 +507,7 @@ namespace IntelOrca.PeggleEdit.Designer
                     level.Background = OpenBackground(dialog.FileName);
 
                     mPack.Levels.Add(level);
+                    mParent.MarkPackDirty();
 
                     LevelFolderNode.Nodes.Add(GetLevelNode(level));
                 }
@@ -534,6 +555,7 @@ namespace IntelOrca.PeggleEdit.Designer
 
                 //Remove from pack
                 mParent.LevelPack.Levels.Remove(level);
+                mParent.MarkPackDirty();
 
                 //Remove node from tree
                 mTreeView.Nodes.Remove(SelectedNode);
@@ -574,6 +596,7 @@ namespace IntelOrca.PeggleEdit.Designer
                     ltw.Text = level.Info.Name;
                     mParent.RefreshDockContainer();
                 }
+                mParent.MarkPackDirty();
             }
         }
 
@@ -598,6 +621,7 @@ namespace IntelOrca.PeggleEdit.Designer
                                 level.Background = new PakImage(Path.GetFileName(dialog.FileName), bitmap);
                             }
                             level.Thumbnail = null;
+                            mParent.MarkPackDirty();
                         }
                     }
 
@@ -646,6 +670,7 @@ namespace IntelOrca.PeggleEdit.Designer
 
                 //Add image to pack
                 mPack.Images.Add(nimgname, image);
+                mParent.MarkPackDirty();
 
                 //Add node
                 ImageFolderNode.Nodes.Add(GetImageNode(nimgname, image));
@@ -683,6 +708,7 @@ namespace IntelOrca.PeggleEdit.Designer
             if (result == DialogResult.OK)
             {
                 mPack.Images.Remove(SelectedNode.Text);
+                mParent.MarkPackDirty();
                 mTreeView.Nodes.Remove(SelectedNode);
             }
         }
@@ -694,7 +720,33 @@ namespace IntelOrca.PeggleEdit.Designer
 
         private void mnuImageExport_Click(object sender, EventArgs e)
         {
+            var image = SelectedNode.Tag as PakImage;
+            if (image == null)
+                return;
 
+            using (var dialog = new SaveFileDialog())
+            {
+                dialog.Title = "Export image";
+                dialog.FileName = Path.GetFileName(SelectedNode.Text);
+                var extension = Path.GetExtension(dialog.FileName);
+                if (String.IsNullOrEmpty(extension))
+                    extension = Path.GetExtension(image.FileName);
+                if (String.IsNullOrEmpty(extension))
+                    extension = ".png";
+                dialog.DefaultExt = extension.TrimStart('.');
+                dialog.Filter = String.Format("Original Image (*{0})|*{0}|All Files (*.*)|*.*", extension);
+                if (dialog.ShowDialog() != DialogResult.OK)
+                    return;
+
+                try
+                {
+                    File.WriteAllBytes(dialog.FileName, image.Data);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Export Image", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
 
         #endregion
@@ -715,6 +767,7 @@ namespace IntelOrca.PeggleEdit.Designer
             ChallengePage challengePage = new ChallengePage();
             challengePage.Title = "Untitled Challenge Page";
             mPack.ChallengePages.Add(challengePage);
+            mParent.MarkPackDirty();
 
             ChallengeFolderNode.Nodes.Add(GetChallengePageNode(challengePage));
         }
@@ -757,6 +810,7 @@ namespace IntelOrca.PeggleEdit.Designer
             {
                 //Remove from pack
                 mParent.LevelPack.ChallengePages.Remove(challengePage);
+                mParent.MarkPackDirty();
 
                 //Remove node from tree
                 mTreeView.Nodes.Remove(SelectedNode);
@@ -771,6 +825,7 @@ namespace IntelOrca.PeggleEdit.Designer
             {
                 //Challenge page name may have changed
                 SelectedNode.Text = challengePage.Title;
+                mParent.MarkPackDirty();
             }
         }
 
@@ -800,6 +855,7 @@ namespace IntelOrca.PeggleEdit.Designer
             {
                 //Remove from challenge page
                 challengePage.Challenges.Remove(challenge);
+                mParent.MarkPackDirty();
 
                 //Remove node from tree
                 mTreeView.Nodes.Remove(SelectedNode);
@@ -814,6 +870,7 @@ namespace IntelOrca.PeggleEdit.Designer
             {
                 //Challenge name may have changed
                 SelectedNode.Text = challenge.Name;
+                mParent.MarkPackDirty();
             }
         }
 

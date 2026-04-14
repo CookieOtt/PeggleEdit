@@ -230,6 +230,12 @@ namespace IntelOrca.PeggleEdit.Designer
 
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
+            if (!ShowClosePackWarning())
+            {
+                e.Cancel = true;
+                return;
+            }
+
             Settings.Default.MDIFormSize = ClientSize;
 
             if (WindowState == FormWindowState.Maximized)
@@ -627,6 +633,7 @@ namespace IntelOrca.PeggleEdit.Designer
 
         LevelPack mPack;
         string mPackFilename;
+        bool mPackDirty;
 
         private void DefaultStartupPack()
         {
@@ -675,6 +682,7 @@ namespace IntelOrca.PeggleEdit.Designer
                 level.Info = info;
 
                 mPack.Levels.Add(level);
+                MarkPackDirty();
                 OpenLevel(level);
             }
 
@@ -694,6 +702,7 @@ namespace IntelOrca.PeggleEdit.Designer
             level.Info = info;
             pack.Levels.Add(level);
             OpenPack(pack);
+            MarkPackClean();
             OpenLevel(pack.Levels[0]);
             SetStatus("Select a tool from the Tools tab to start adding pegs and objects.");
         }
@@ -718,6 +727,7 @@ namespace IntelOrca.PeggleEdit.Designer
 
             UpdateRecentList(filename);
             OpenPack(pack);
+            MarkPackClean();
         }
 
         public void OpenPack(LevelPack pack)
@@ -737,6 +747,7 @@ namespace IntelOrca.PeggleEdit.Designer
                 return false;
 
             UpdateRecentList(filename);
+            MarkPackClean();
             return true;
         }
 
@@ -815,8 +826,46 @@ namespace IntelOrca.PeggleEdit.Designer
 
         public bool ShowClosePackWarning()
         {
-            DialogResult result = MessageBox.Show("Close this project without saving?", "Close Project", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
-            return (result == DialogResult.OK);
+            if (!mPackDirty)
+                return true;
+
+            DialogResult result = MessageBox.Show("Save changes to this project before closing?", "Close Project", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+            if (result == DialogResult.Cancel)
+                return false;
+
+            if (result == DialogResult.Yes)
+                return SaveCurrentPack();
+
+            return true;
+        }
+
+        public void MarkPackDirty()
+        {
+            mPackDirty = true;
+        }
+
+        private void MarkPackClean()
+        {
+            mPackDirty = false;
+        }
+
+        private bool SaveCurrentPack()
+        {
+            if (!String.IsNullOrEmpty(PackFilename))
+                return SavePack(PackFilename);
+
+            using (var dialog = new SaveFileDialog())
+            {
+                dialog.Filter = "Peggle Level Packs (*.pak)|*.pak";
+                if (dialog.ShowDialog() != DialogResult.OK)
+                    return false;
+
+                if (!SavePack(dialog.FileName))
+                    return false;
+
+                PackFilename = dialog.FileName;
+                return true;
+            }
         }
 
         private void UpdateRecentList(string path)

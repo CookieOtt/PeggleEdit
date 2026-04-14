@@ -211,9 +211,17 @@ namespace IntelOrca.PeggleEdit.Tools.Pack
             ParseCFG(Encoding.UTF8.GetString(cfgRecord.Buffer));
 
             // Load levels
+            var missingLevels = new List<LevelInfo>();
             foreach (var linfo in mLevelInfos)
             {
-                var buffer = pakFile.GetRecord(Path.Combine("levels", linfo.Filename + ".dat")).Buffer;
+                var record = pakFile.GetRecord(Path.Combine("levels", linfo.Filename + ".dat"));
+                if (record == null)
+                {
+                    missingLevels.Add(linfo);
+                    continue;
+                }
+
+                var buffer = record.Buffer;
                 using (var levelReader = new LevelReader(buffer))
                 {
                     var level = levelReader.Read();
@@ -229,6 +237,19 @@ namespace IntelOrca.PeggleEdit.Tools.Pack
                     level.Hash = GetLevelData(level).CalculateFnv1a();
                     Levels.Add(level);
                 }
+            }
+
+            if (missingLevels.Count != 0)
+            {
+                var message = new StringBuilder();
+                message.AppendLine("Some levels listed in the pack CFG could not be found and were skipped:");
+                message.AppendLine();
+                foreach (var missingLevel in missingLevels)
+                {
+                    message.AppendFormat("{0} ({1}.dat)", missingLevel.Name, missingLevel.Filename);
+                    message.AppendLine();
+                }
+                MessageBox.Show(message.ToString(), "Open Level Pack", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
 
             // Load any images

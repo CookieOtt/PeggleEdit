@@ -55,6 +55,7 @@ namespace IntelOrca.PeggleEdit.Designer
             if (_propertyGrid.SelectedObjects.Length == 0)
                 return;
 
+            _parent.MarkPackDirty();
             _parent.GetFocusedLevelEditor().UpdateRedraw();
         }
 

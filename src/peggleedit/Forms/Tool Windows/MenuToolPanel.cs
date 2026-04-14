@@ -702,7 +702,8 @@ namespace IntelOrca.PeggleEdit.Designer
         private void packDetailsRibbonButton_Click(object sender, EventArgs e)
         {
             PackDetailsForm pack = new PackDetailsForm(mParent.LevelPack);
-            pack.ShowDialog();
+            if (pack.ShowDialog() == DialogResult.OK)
+                mParent.MarkPackDirty();
         }
 
         private void challengesRibbonButton_Click(object sender, EventArgs e)

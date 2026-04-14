@@ -52,6 +52,7 @@ namespace IntelOrca.PeggleEdit.Designer
 
             mLevelEditor.UpdatedRedrawed += new EventHandler(mLevelEditor_UpdatedRedrawed);
             mLevelEditor.SelectionChanged += new EventHandler(mLevelEditor_SelectionChanged);
+            mLevelEditor.ContentChanged += new EventHandler(mLevelEditor_ContentChanged);
             mLevelEditor.MouseMove += new MouseEventHandler(mLevelEditor_MouseMove);
 
             mTimer = new Timer();
@@ -100,6 +101,11 @@ namespace IntelOrca.PeggleEdit.Designer
                 //Update entry list
                 mParent.UpdateEntryList(mLevelEditor);
             }
+        }
+
+        private void mLevelEditor_ContentChanged(object sender, EventArgs e)
+        {
+            mParent.MarkPackDirty();
         }
 
         private void mLevelEditor_SelectionChanged(object sender, EventArgs e)
