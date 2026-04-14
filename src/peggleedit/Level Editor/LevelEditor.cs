@@ -33,7 +33,8 @@ namespace IntelOrca.PeggleEdit.Designer
 
         private EditorTool mSelectedTool;
 
-        private Stack<LevelEntry[]> mHistory = new Stack<LevelEntry[]>();
+        private Stack<LevelEntry[]> mUndoHistory = new Stack<LevelEntry[]>();
+        private Stack<LevelEntry[]> mRedoHistory = new Stack<LevelEntry[]>();
 
         private LevelEntryCollection mOldSelectedEntries = new LevelEntryCollection();
         private LevelEntryCollection mSelectedEntries = new LevelEntryCollection();
@@ -84,6 +85,12 @@ namespace IntelOrca.PeggleEdit.Designer
 
         public void CreateUndoPoint()
         {
+            mUndoHistory.Push(CreateHistorySnapshot());
+            mRedoHistory.Clear();
+        }
+
+        private LevelEntry[] CreateHistorySnapshot()
+        {
             foreach (LevelEntry le in mLevel.Entries)
             {
                 le.Selected = SelectedEntries.Contains(le);
@@ -96,34 +103,48 @@ namespace IntelOrca.PeggleEdit.Designer
                 copies.Add((LevelEntry)le.Clone());
             }
 
-            //if (mHistory.Count >= 100) {
+            //if (mUndoHistory.Count >= 100) {
             //    Queue<LevelEntry[]> tmpQueue = new Queue<LevelEntry[]>();
-            //    while (mHistory.Count > 0) {
-            //        tmpQueue.Enqueue(mHistory.Pop());
+            //    while (mUndoHistory.Count > 0) {
+            //        tmpQueue.Enqueue(mUndoHistory.Pop());
             //    }
 
             //    for (int i = 0; i < 99; i++) {
-            //        mHistory.Push(tmpQueue.Dequeue());
+            //        mUndoHistory.Push(tmpQueue.Dequeue());
             //    }
             //}
 
-            mHistory.Push(copies.ToArray());
+            return copies.ToArray();
         }
 
         public void Undo()
         {
-            if (mHistory.Count > 0)
-            {
-                var entries = mHistory.Pop();
-                mLevel.Entries.Clear();
-                mLevel.Entries.AddRange(entries);
+            if (mUndoHistory.Count == 0)
+                return;
 
-                mLevel.UpdateMovementLinksRead();
+            mRedoHistory.Push(CreateHistorySnapshot());
+            RestoreHistorySnapshot(mUndoHistory.Pop());
+        }
 
-                if (mSelectedTool is SelectEditorTool)
-                    ChangeSelection(entries.Where(x => x.Selected));
-                UpdateRedraw();
-            }
+        public void Redo()
+        {
+            if (mRedoHistory.Count == 0)
+                return;
+
+            mUndoHistory.Push(CreateHistorySnapshot());
+            RestoreHistorySnapshot(mRedoHistory.Pop());
+        }
+
+        private void RestoreHistorySnapshot(LevelEntry[] entries)
+        {
+            mLevel.Entries.Clear();
+            mLevel.Entries.AddRange(entries);
+
+            mLevel.UpdateMovementLinksRead();
+
+            if (mSelectedTool is SelectEditorTool)
+                ChangeSelection(entries.Where(x => x.Selected));
+            UpdateRedraw();
         }
 
         public void UpdateRedraw()
@@ -379,6 +400,8 @@ namespace IntelOrca.PeggleEdit.Designer
             if (objects.Count == 0)
                 return;
 
+            CreateUndoPoint();
+
             PointF cc = ((Brick)(objects[0])).GetCentrePoint();
 
             foreach (Brick b in objects)
@@ -478,11 +501,11 @@ namespace IntelOrca.PeggleEdit.Designer
 
         public void FlipObjectsHorizontally()
         {
-            CreateUndoPoint();
-
             LevelEntryCollection objects = new LevelEntryCollection(GetSelectedObjects());
             if (objects.Count < 2)
                 return;
+
+            CreateUndoPoint();
 
             objects.Sort(new Comparison<LevelEntry>(CompareObjectsByX));
 
@@ -510,11 +533,11 @@ namespace IntelOrca.PeggleEdit.Designer
 
         public void FlipPegsVertically()
         {
-            CreateUndoPoint();
-
             LevelEntryCollection objects = new LevelEntryCollection(GetSelectedObjects());
             if (objects.Count < 2)
                 return;
+
+            CreateUndoPoint();
 
             objects.Sort(new Comparison<LevelEntry>(CompareObjectsByY));
 
@@ -621,6 +644,13 @@ namespace IntelOrca.PeggleEdit.Designer
         public void BringObjectsForward()
         {
             LevelEntryCollection objs = GetSelectedObjectsInZOrder();
+            if (objs.Count == 0)
+                return;
+
+            if (!CanBringObjectsForward(objs))
+                return;
+
+            CreateUndoPoint();
 
             foreach (LevelEntry obj in objs)
             {
@@ -647,6 +677,13 @@ namespace IntelOrca.PeggleEdit.Designer
         public void SendObjectsBackward()
         {
             LevelEntryCollection objs = GetSelectedObjectsInZOrder();
+            if (objs.Count == 0)
+                return;
+
+            if (!CanSendObjectsBackward(objs))
+                return;
+
+            CreateUndoPoint();
 
             foreach (LevelEntry obj in objs)
             {
@@ -673,6 +710,13 @@ namespace IntelOrca.PeggleEdit.Designer
         public void BringObjectsToFront()
         {
             LevelEntryCollection objs = GetSelectedObjectsInZOrder();
+            if (objs.Count == 0)
+                return;
+
+            if (AreObjectsAtFront(objs))
+                return;
+
+            CreateUndoPoint();
             //objs.Reverse();
 
             foreach (LevelEntry obj in objs)
@@ -691,6 +735,13 @@ namespace IntelOrca.PeggleEdit.Designer
         {
             //Reverse the order so that selected objects maintain their inner z order
             LevelEntryCollection objs = GetSelectedObjectsInZOrder();
+            if (objs.Count == 0)
+                return;
+
+            if (AreObjectsAtBack(objs))
+                return;
+
+            CreateUndoPoint();
             objs.Reverse();
 
             foreach (LevelEntry obj in objs)
@@ -703,6 +754,49 @@ namespace IntelOrca.PeggleEdit.Designer
             }
 
             UpdateRedraw();
+        }
+
+        private bool CanBringObjectsForward(LevelEntryCollection objects)
+        {
+            foreach (LevelEntry obj in objects)
+            {
+                int index = mLevel.Entries.IndexOf(obj);
+                if (index != mLevel.Entries.Count - 1 && !objects.Contains(mLevel.Entries[index + 1]))
+                    return true;
+            }
+            return false;
+        }
+
+        private bool CanSendObjectsBackward(LevelEntryCollection objects)
+        {
+            foreach (LevelEntry obj in objects)
+            {
+                int index = mLevel.Entries.IndexOf(obj);
+                if (index != 0 && !objects.Contains(mLevel.Entries[index - 1]))
+                    return true;
+            }
+            return false;
+        }
+
+        private bool AreObjectsAtFront(LevelEntryCollection objects)
+        {
+            int startIndex = mLevel.Entries.Count - objects.Count;
+            for (int i = 0; i < objects.Count; i++)
+            {
+                if (mLevel.Entries[startIndex + i] != objects[i])
+                    return false;
+            }
+            return true;
+        }
+
+        private bool AreObjectsAtBack(LevelEntryCollection objects)
+        {
+            for (int i = 0; i < objects.Count; i++)
+            {
+                if (mLevel.Entries[i] != objects[i])
+                    return false;
+            }
+            return true;
         }
 
         public void RemoveDuplicateObjects()
@@ -985,6 +1079,8 @@ namespace IntelOrca.PeggleEdit.Designer
             set
             {
                 mLevel = value;
+                mUndoHistory.Clear();
+                mRedoHistory.Clear();
 
                 ClearSelection();
 

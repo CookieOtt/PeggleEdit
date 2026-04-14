@@ -214,7 +214,9 @@ namespace IntelOrca.PeggleEdit.Designer
             {
                 foreach (ShortcutAction sa in container.GetShortcuts())
                 {
-                    if (sa.Key == e.KeyCode && ((sa.Ctrl && e.Control) || (!sa.Ctrl && !e.Control)))
+                    if (sa.Key == e.KeyCode &&
+                        sa.Ctrl == e.Control &&
+                        sa.Shift == e.Shift)
                     {
                         if (sa.EditorMustBeFocused && !IsLevelEditorFocused())
                             break;
@@ -640,7 +642,8 @@ namespace IntelOrca.PeggleEdit.Designer
             LevelPack pack = new LevelPack();
             pack.Levels.Add(new Level());
             OpenPack(pack);
-            //OpenLevel(pack.Levels[0]);
+            OpenLevel(pack.Levels[0]);
+            SetStatus("Select a tool from the Tools tab to start adding pegs and objects.");
         }
 
         public void OpenPack(string filename)

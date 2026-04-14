@@ -179,11 +179,23 @@ namespace IntelOrca.PeggleEdit.Designer
             btnUndo.SmallImage = Resources.undo_16;
             btnUndo.Click += new EventHandler(undoRibbonButton_Click);
 
+            RibbonButton btnRedo = new RibbonButton();
+            btnRedo.SmallImage = CreateRedoImage();
+            btnRedo.Click += new EventHandler(redoRibbonButton_Click);
+
             mRibbon.QuickAcessToolbar.Items.Add(btnNew);
             mRibbon.QuickAcessToolbar.Items.Add(btnOpen);
             mRibbon.QuickAcessToolbar.Items.Add(btnSave);
             mRibbon.QuickAcessToolbar.Items.Add(btnSaveAs);
             mRibbon.QuickAcessToolbar.Items.Add(btnUndo);
+            mRibbon.QuickAcessToolbar.Items.Add(btnRedo);
+        }
+
+        private static Image CreateRedoImage()
+        {
+            Image redoImage = (Image)Resources.undo_16.Clone();
+            redoImage.RotateFlip(RotateFlipType.RotateNoneFlipX);
+            return redoImage;
         }
 
         private void InitHomeTab()
@@ -655,6 +667,14 @@ namespace IntelOrca.PeggleEdit.Designer
                 return;
 
             LevelEditor.Undo();
+        }
+
+        private void redoRibbonButton_Click(object sender, EventArgs e)
+        {
+            if (!IsEditorAvailable())
+                return;
+
+            LevelEditor.Redo();
         }
 
         private void cutRibbonButton_Click(object sender, EventArgs e)
@@ -1420,7 +1440,9 @@ namespace IntelOrca.PeggleEdit.Designer
                 new ShortcutAction(Keys.N, true, new EventHandler(newRibbonButton_Click)),
                 new ShortcutAction(Keys.O, true, new EventHandler(openRibbonButton_Click)),
                 new ShortcutAction(Keys.S, true, new EventHandler(saveRibbonButton_Click)),
-                new ShortcutAction(Keys.Z, true, true, new EventHandler(undoRibbonButton_Click)),
+                new ShortcutAction(Keys.Z, true, new EventHandler(undoRibbonButton_Click)),
+                new ShortcutAction(Keys.Y, true, new EventHandler(redoRibbonButton_Click)),
+                new ShortcutAction(Keys.Z, true, true, false, new EventHandler(redoRibbonButton_Click)),
                 new ShortcutAction(Keys.X, true, true, new EventHandler(cutRibbonButton_Click)),
                 new ShortcutAction(Keys.C, true, true, new EventHandler(copyRibbonButton_Click)),
                 new ShortcutAction(Keys.V, true, true, new EventHandler(pasteRibbonButton_Click)),

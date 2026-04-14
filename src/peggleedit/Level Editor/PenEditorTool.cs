@@ -43,6 +43,7 @@ namespace IntelOrca.PeggleEdit.Designer.Level_Editor
             {
                 case null:
                 case PenState.Initial:
+                    Editor.CreateUndoPoint();
                     _entry = _pegKind == PegKind.Circle ?
                         (CurveGenerator)new PegCurveGenerator(Editor.Level) :
                         (CurveGenerator)new BrickCurveGenerator(Editor.Level);

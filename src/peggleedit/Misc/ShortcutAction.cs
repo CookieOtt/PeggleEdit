@@ -25,6 +25,7 @@ namespace IntelOrca.PeggleEdit.Designer
     {
         public Keys Key;
         public bool Ctrl;
+        public bool Shift;
         public bool EditorMustBeFocused;
         EventHandler fEventHandler;
         MethodInvoker fMethodInvoker;
@@ -35,9 +36,15 @@ namespace IntelOrca.PeggleEdit.Designer
         }
 
         public ShortcutAction(Keys k, bool ctrl, bool editorMustBeFocused, EventHandler func)
+            : this(k, ctrl, false, editorMustBeFocused, func)
+        {
+        }
+
+        public ShortcutAction(Keys k, bool ctrl, bool shift, bool editorMustBeFocused, EventHandler func)
         {
             Key = k;
             Ctrl = ctrl;
+            Shift = shift;
             EditorMustBeFocused = editorMustBeFocused;
             fEventHandler = func;
         }
@@ -48,9 +55,15 @@ namespace IntelOrca.PeggleEdit.Designer
         }
 
         public ShortcutAction(Keys k, bool ctrl, bool editorMustBeFocused, MethodInvoker func)
+            : this(k, ctrl, false, editorMustBeFocused, func)
+        {
+        }
+
+        public ShortcutAction(Keys k, bool ctrl, bool shift, bool editorMustBeFocused, MethodInvoker func)
         {
             Key = k;
             Ctrl = ctrl;
+            Shift = shift;
             EditorMustBeFocused = editorMustBeFocused;
             fMethodInvoker = func;
         }
