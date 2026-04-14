@@ -28,6 +28,7 @@ namespace IntelOrca.PeggleEdit.Designer
             InitializeComponent();
 
             chkUsePegTextures.Checked = Settings.Default.UsePegTextures;
+            chkDarkMode.Checked = Settings.Default.DarkMode;
 
             chkShowGrid.Checked = Settings.Default.ShowGrid;
             chkSnapToGrid.Checked = Settings.Default.SnapToGrid;
@@ -37,11 +38,14 @@ namespace IntelOrca.PeggleEdit.Designer
             chkAlwaysShowAnchors.Checked = Settings.Default.ShowAnchorsAlways;
 
             txtPeggleNightsExePath.Text = Settings.Default.PeggleNightsExePath;
+
+            AppTheme.Apply(this);
         }
 
         private void btnOK_Click(object sender, EventArgs e)
         {
             Settings.Default.UsePegTextures = chkUsePegTextures.Checked;
+            Settings.Default.DarkMode = chkDarkMode.Checked;
 
             Settings.Default.ShowGrid = chkShowGrid.Checked;
             Settings.Default.SnapToGrid = chkSnapToGrid.Checked;

@@ -49,6 +49,7 @@ namespace IntelOrca.PeggleEdit.Designer
             Text = "Menu";
 
             mRibbon = new Ribbon();
+            mRibbon.Renderer = AppTheme.CreateRibbonRenderer();
             mRibbon.Location = new Point(0, 0);
             mRibbon.Width = this.Width;
             mRibbon.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top;
@@ -62,6 +63,16 @@ namespace IntelOrca.PeggleEdit.Designer
             UpdateRecentPackFiles();
 
             Height = mRibbon.Height;
+        }
+
+        public void ApplyTheme()
+        {
+            BackColor = Settings.Default.DarkMode ? AppTheme.DarkBackColor : SystemColors.Control;
+            ForeColor = Settings.Default.DarkMode ? AppTheme.DarkForeColor : SystemColors.ControlText;
+            mRibbon.BackColor = BackColor;
+            mRibbon.ForeColor = ForeColor;
+            mRibbon.Renderer = AppTheme.CreateRibbonRenderer();
+            mRibbon.Invalidate();
         }
 
         public int RightHeight
@@ -698,9 +709,11 @@ namespace IntelOrca.PeggleEdit.Designer
         private void optionsRibbonButton_Click(object sender, EventArgs e)
         {
             OptionsForm form = new OptionsForm();
-            form.ShowDialog();
-
-            DoSettingUpdate();
+            if (form.ShowDialog() == DialogResult.OK)
+            {
+                DoSettingUpdate();
+                mParent.ApplyTheme();
+            }
         }
 
         #endregion

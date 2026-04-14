@@ -47,6 +47,7 @@ namespace IntelOrca.PeggleEdit.Designer
             _propertyGrid.PropertyValueChanged += new PropertyValueChangedEventHandler(mPropertyGrid_PropertyValueChanged);
 
             Controls.Add(_propertyGrid);
+            AppTheme.Apply(this);
         }
 
         void mPropertyGrid_PropertyValueChanged(object s, PropertyValueChangedEventArgs e)

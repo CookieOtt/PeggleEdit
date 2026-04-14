@@ -38,6 +38,7 @@ namespace IntelOrca.PeggleEdit.Designer
         public bool ShowAnchorsAlways { get; set; }
 
         public bool UsePegTextures { get; set; } = true;
+        public bool DarkMode { get; set; }
 
         public Size MDIFormSize { get; set; } = new Size(800, 600);
         public bool MDIMaximized { get; set; }

@@ -53,6 +53,7 @@ namespace IntelOrca.PeggleEdit.Designer
             mList.SelectedIndexChanged += new System.EventHandler(mList_SelectedIndexChanged);
 
             this.Controls.Add(mList);
+            AppTheme.Apply(this);
         }
 
         public void UpdateView(LevelEditor editor)

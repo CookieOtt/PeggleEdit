@@ -97,6 +97,7 @@ namespace IntelOrca.PeggleEdit.Designer
             CancelButton = cancelButton;
 
             SetScaleAndCenter(GetFillScale());
+            AppTheme.Apply(this);
         }
 
         protected override void Dispose(bool disposing)

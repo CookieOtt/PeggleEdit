@@ -62,6 +62,7 @@ namespace IntelOrca.PeggleEdit.Designer
             this.Controls.Add(mLevelEditor);
 
             this.AutoScroll = true;
+            AppTheme.Apply(this);
         }
 
         protected override void OnShown(EventArgs e)

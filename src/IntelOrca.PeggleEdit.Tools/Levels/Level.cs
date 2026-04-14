@@ -61,6 +61,7 @@ namespace IntelOrca.PeggleEdit.Tools.Levels
         public PakImage Background { get; set; }
         public PakImage Thumbnail { get; set; }
         public static Image InterfaceImage => mInterface;
+        public static Color WorkspaceBackColor { get; set; } = SystemColors.AppWorkspace;
         public bool ShowParticles { get; set; } = true;
         public bool UsePegTextures { get; set; }
         public ulong Hash { get; set; }
@@ -76,7 +77,10 @@ namespace IntelOrca.PeggleEdit.Tools.Levels
 
         public void Draw(Graphics g)
         {
-            g.FillRectangle(SystemBrushes.AppWorkspace, Bounds);
+            using (var workspaceBrush = new SolidBrush(WorkspaceBackColor))
+            {
+                g.FillRectangle(workspaceBrush, Bounds);
+            }
 
             g.DrawRectangle(Pens.Black, mCanvasMarginWidth - 1, mCanvasMarginHeight - 1, 800 + 1, 600 + 1);
 

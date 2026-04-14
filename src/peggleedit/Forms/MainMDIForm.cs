@@ -122,6 +122,7 @@ namespace IntelOrca.PeggleEdit.Designer
             Controls.Add(mTopPanel);
             Controls.Add(mMiddlePanel);
             Controls.Add(mBottomPanel);
+            ApplyTheme();
 
             //Load the docking layout
             LoadDefaultDockLayout();
@@ -156,10 +157,7 @@ namespace IntelOrca.PeggleEdit.Designer
             mSerializer = new DockStateSerializer(mDockContainer);
             mSerializer.SavePath = Settings.GetLayoutPath();
 
-            mDockContainer.TitleBarGradientColor1 = Color.FromArgb(225, 237, 252);
-            mDockContainer.TitleBarGradientColor2 = Color.FromArgb(191, 219, 255);
-            mDockContainer.TitleBarGradientSelectedColor1 = Color.FromArgb(225, 237, 255);
-            mDockContainer.TitleBarGradientSelectedColor2 = Color.FromArgb(150, 200, 255);
+            ApplyDockContainerTheme();
 
             mDockContainer.Dock = DockStyle.Fill;
 
@@ -180,6 +178,54 @@ namespace IntelOrca.PeggleEdit.Designer
             mStatusStrip.Items.Add(mStatusLabel);
             mStatusStrip.Items.Add(mLocationLabel);
 
+        }
+
+        public void ApplyTheme()
+        {
+            AppTheme.Apply(this);
+            foreach (Form form in Application.OpenForms)
+            {
+                if (form != this)
+                    AppTheme.Apply(form);
+            }
+            ApplyDockContainerTheme();
+            mMenuToolPanel?.ApplyTheme();
+
+            if (Settings.Default.DarkMode)
+            {
+                mStatusStrip.BackColor = AppTheme.DarkControlColor;
+                mStatusStrip.ForeColor = AppTheme.DarkForeColor;
+            }
+            else
+            {
+                mStatusStrip.BackColor = SystemColors.Control;
+                mStatusStrip.ForeColor = SystemColors.ControlText;
+            }
+
+            Invalidate(true);
+        }
+
+        private void ApplyDockContainerTheme()
+        {
+            if (mDockContainer == null)
+                return;
+
+            if (Settings.Default.DarkMode)
+            {
+                mDockContainer.TitleBarGradientColor1 = Color.FromArgb(53, 56, 62);
+                mDockContainer.TitleBarGradientColor2 = Color.FromArgb(35, 37, 42);
+                mDockContainer.TitleBarGradientSelectedColor1 = Color.FromArgb(75, 79, 88);
+                mDockContainer.TitleBarGradientSelectedColor2 = Color.FromArgb(50, 53, 60);
+                mDockContainer.TitleBarTextColor = AppTheme.DarkForeColor;
+            }
+            else
+            {
+                mDockContainer.TitleBarGradientColor1 = Color.FromArgb(225, 237, 252);
+                mDockContainer.TitleBarGradientColor2 = Color.FromArgb(191, 219, 255);
+                mDockContainer.TitleBarGradientSelectedColor1 = Color.FromArgb(225, 237, 255);
+                mDockContainer.TitleBarGradientSelectedColor2 = Color.FromArgb(150, 200, 255);
+                mDockContainer.TitleBarTextColor = Color.Black;
+            }
         }
 
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)

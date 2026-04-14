@@ -48,6 +48,7 @@
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.grpApperance = new System.Windows.Forms.GroupBox();
+            this.chkDarkMode = new System.Windows.Forms.CheckBox();
             this.chkUsePegTextures = new System.Windows.Forms.CheckBox();
             this.tabControl.SuspendLayout();
             this.tabDesigner.SuspendLayout();
@@ -285,15 +286,27 @@
             // 
             // grpApperance
             // 
+            this.grpApperance.Controls.Add(this.chkDarkMode);
             this.grpApperance.Controls.Add(this.chkUsePegTextures);
             this.grpApperance.Location = new System.Drawing.Point(12, 12);
             this.grpApperance.Margin = new System.Windows.Forms.Padding(6);
             this.grpApperance.Name = "grpApperance";
             this.grpApperance.Padding = new System.Windows.Forms.Padding(6);
-            this.grpApperance.Size = new System.Drawing.Size(618, 87);
+            this.grpApperance.Size = new System.Drawing.Size(618, 96);
             this.grpApperance.TabIndex = 2;
             this.grpApperance.TabStop = false;
             this.grpApperance.Text = "Apperance";
+            // 
+            // chkDarkMode
+            // 
+            this.chkDarkMode.AutoSize = true;
+            this.chkDarkMode.Location = new System.Drawing.Point(270, 37);
+            this.chkDarkMode.Margin = new System.Windows.Forms.Padding(6);
+            this.chkDarkMode.Name = "chkDarkMode";
+            this.chkDarkMode.Size = new System.Drawing.Size(149, 29);
+            this.chkDarkMode.TabIndex = 1;
+            this.chkDarkMode.Text = "Dark mode";
+            this.chkDarkMode.UseVisualStyleBackColor = true;
             // 
             // chkUsePegTextures
             // 
@@ -363,6 +376,7 @@
         private System.Windows.Forms.TabPage tabApplication;
         private System.Windows.Forms.Button btnSetFileAssociation;
         private System.Windows.Forms.GroupBox grpApperance;
+        private System.Windows.Forms.CheckBox chkDarkMode;
         private System.Windows.Forms.CheckBox chkUsePegTextures;
     }
 }
